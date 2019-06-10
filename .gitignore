@@ -30,3 +30,13 @@
 *.exe
 *.out
 *.app
+*.suo
+*.tlog
+*.db
+*.ipch
+*.opendb
+*.idb
+/CosmosDBRestFromCpp/CosmosDBRestFromCpp/Debug
+*.ilk
+*.pdb
+*.exp
