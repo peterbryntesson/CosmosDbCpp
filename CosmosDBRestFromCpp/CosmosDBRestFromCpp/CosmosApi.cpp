@@ -119,7 +119,7 @@ void CosmosApi::AddDocument(const std::string & document)
 		headers = curl_slist_append(headers, "x-ms-version: 2015-08-06");
 
 		auto authHeaderToken = GenerateMasterKeyAuthorizationSignature("GET", "", "dbs",
-			"Your key", "master", "1.0", currentDate);
+			_masterKey, "master", "1.0", currentDate);
 		std::string authHeader("authorization: ");
 		authHeader = authHeader.append(authHeaderToken);
 		headers = curl_slist_append(headers, authHeader.c_str()); 

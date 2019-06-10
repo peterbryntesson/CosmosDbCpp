@@ -13,7 +13,7 @@
 int main()
 {
 	auto api = new CosmosApi();
-	api->Init("https://rbssandbox.documents.azure.com/dbs/", "MTySJ07erLfA4BYfc41ALmwplnlUfMMU4unSxt9ocuy4g0tWNMOUJjveJLzU90FghUY4YUUuUpP8XIa9vfmw4Q==", "sandpit");
+	api->Init("https://rbssandbox.documents.azure.com/", "Your Key", "sandpit");
 	api->AddDocument("{ \"key\": \"1\" \"value\": \"Hello World\" }");
 }
 
