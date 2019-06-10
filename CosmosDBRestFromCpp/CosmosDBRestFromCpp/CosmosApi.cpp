@@ -104,28 +104,47 @@ void function_pt(void *ptr, size_t size, size_t nmemb, void *stream) {
 
 void CosmosApi::AddDocument(const std::string & document)
 {
+	PostRequest("sandpit", "sandpit", "2", document);
+}
+
+void CosmosApi::PostRequest(const std::string& db, const std::string& collection, const std::string& partitionKey, const std::string& body) {
 	CURL* curl = curl_easy_init();
 	if (curl) {
 		CURLcode res;
 
-		curl_easy_setopt(curl, CURLOPT_URL, _endpoint.c_str());
+		auto url = _endpoint.append("dbs/");
+		url = url.append(db);
+		url = url.append("/colls/");
+		url = url.append(collection);
+		url = url.append("/docs");
+		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 
 		std::string currentDate = GetCurrentUtcTime();
 		std::string date_header = "x-ms-date: ";
 		date_header = date_header.append(currentDate);
 		struct curl_slist *headers = NULL;
-		//headers = curl_slist_append(headers, "ContentType: text/json");
-		headers = curl_slist_append(headers, date_header.c_str()); 
+		headers = curl_slist_append(headers, date_header.c_str());
 		headers = curl_slist_append(headers, "x-ms-version: 2015-08-06");
+		headers = curl_slist_append(headers, "x-ms-documentdb-is-upsert: true");
+		if (!partitionKey.empty())
+			headers = curl_slist_append(headers, "x-ms-documentdb-partitionkey: [ \"3\" ]");
+		if (!body.empty()) {
+			headers = curl_slist_append(headers, "ContentType: text/json");
+			curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body.c_str());
+			curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, body.length());
+		}
 
-		auto authHeaderToken = GenerateMasterKeyAuthorizationSignature("GET", "", "dbs",
+		std::string resourceLink = "dbs/";
+		resourceLink = resourceLink.append(db);
+		resourceLink = resourceLink.append("/colls/");
+		resourceLink = resourceLink.append(collection);
+		auto authHeaderToken = GenerateMasterKeyAuthorizationSignature("POST", resourceLink, "docs",
 			_masterKey, "master", "1.0", currentDate);
 		std::string authHeader("authorization: ");
 		authHeader = authHeader.append(authHeaderToken);
-		headers = curl_slist_append(headers, authHeader.c_str()); 
+		headers = curl_slist_append(headers, authHeader.c_str());
 		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, function_pt);
-		// setup lots of stuff
 
 		res = curl_easy_perform(curl);
 
@@ -134,8 +153,8 @@ void CosmosApi::AddDocument(const std::string & document)
 
 		curl_easy_cleanup(curl);
 	}
-
 }
+
 
 const std::string & CosmosApi::GetDocument(const std::string & key)
 {

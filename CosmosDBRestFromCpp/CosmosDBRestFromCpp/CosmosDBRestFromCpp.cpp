@@ -13,8 +13,8 @@
 int main()
 {
 	auto api = new CosmosApi();
-	api->Init("https://rbssandbox.documents.azure.com/", "Your Key", "sandpit");
-	api->AddDocument("{ \"key\": \"1\" \"value\": \"Hello World\" }");
+	api->Init("Your master account", "Your master key", "sandpit");
+	api->AddDocument("{ \"id\": \"3\", \"value\": \"Hello World again\" }");
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu

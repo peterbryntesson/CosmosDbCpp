@@ -23,5 +23,6 @@ private:
 	std::string GenerateMasterKeyAuthorizationSignature(const std::string& verb, const std::string& resourceId,
 		const std::string& resourceType, const std::string& key, const std::string& keyType,
 		const std::string& tokenVersion, const std::string& currentDate);
+	void PostRequest(const std::string& db, const std::string& collection, const std::string& partitionkey, const std::string& body);
 };
 
