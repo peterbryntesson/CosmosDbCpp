@@ -13,8 +13,10 @@
 int main()
 {
 	auto api = new CosmosApi();
-	api->Init("Your master account", "Your master key", "sandpit");
-	api->AddDocument("{ \"id\": \"3\", \"value\": \"Hello World again\" }");
+	api->Init("YOUR COSMOS DB ACCOUNT", "YOUR MASTER KEY", "sandpit");
+	api->AddDocument("{ \"id\": \"5\", \"value\": \"Hello World again 3\" }", "5");
+	api->AddDocument("{ \"id\": \"6\", \"value\": \"Hello World again 4\" }", "6");
+	api->AddDocument("{ \"id\": \"7\", \"value\": \"Hello World again 5\" }", "7");
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu

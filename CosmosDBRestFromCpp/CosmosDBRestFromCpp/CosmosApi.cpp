@@ -102,9 +102,9 @@ void function_pt(void *ptr, size_t size, size_t nmemb, void *stream) {
 	printf((char*)ptr);
 }
 
-void CosmosApi::AddDocument(const std::string & document)
+void CosmosApi::AddDocument(const std::string & document, const std::string& partitionKey)
 {
-	PostRequest("sandpit", "sandpit", "2", document);
+	PostRequest("sandpit", "sandpit", partitionKey, document);
 }
 
 void CosmosApi::PostRequest(const std::string& db, const std::string& collection, const std::string& partitionKey, const std::string& body) {
@@ -112,7 +112,8 @@ void CosmosApi::PostRequest(const std::string& db, const std::string& collection
 	if (curl) {
 		CURLcode res;
 
-		auto url = _endpoint.append("dbs/");
+		auto url = _endpoint;
+		url = url.append("dbs/");
 		url = url.append(db);
 		url = url.append("/colls/");
 		url = url.append(collection);
@@ -126,8 +127,12 @@ void CosmosApi::PostRequest(const std::string& db, const std::string& collection
 		headers = curl_slist_append(headers, date_header.c_str());
 		headers = curl_slist_append(headers, "x-ms-version: 2015-08-06");
 		headers = curl_slist_append(headers, "x-ms-documentdb-is-upsert: true");
-		if (!partitionKey.empty())
-			headers = curl_slist_append(headers, "x-ms-documentdb-partitionkey: [ \"3\" ]");
+		if (!partitionKey.empty()) {
+			std::string partitionkey_header = "x-ms-documentdb-partitionkey: [ \"";
+			partitionkey_header = partitionkey_header.append(partitionKey);
+			partitionkey_header = partitionkey_header.append("\" ]");
+			headers = curl_slist_append(headers, partitionkey_header.c_str());
+		}
 		if (!body.empty()) {
 			headers = curl_slist_append(headers, "ContentType: text/json");
 			curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body.c_str());

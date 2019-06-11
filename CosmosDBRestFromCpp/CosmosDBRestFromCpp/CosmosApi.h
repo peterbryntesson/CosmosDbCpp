@@ -16,7 +16,7 @@ public:
 public:
 	void Init(const std::string& endpoint, const std::string& masterKey, const std::string& db);
 
-	void AddDocument(const std::string& document);
+	void AddDocument(const std::string& document, const std::string& partitionKey);
 	const std::string& GetDocument(const std::string& key);
 
 private:
