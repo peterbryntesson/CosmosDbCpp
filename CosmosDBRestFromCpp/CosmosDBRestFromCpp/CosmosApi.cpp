@@ -20,6 +20,7 @@
 #include <stdlib.h>
 
 using namespace std;
+std::string	CosmosApi::_response;
 
 string GetCurrentUtcTime() {
 	char outstr[200];
@@ -98,8 +99,9 @@ void CosmosApi::Init(const std::string & endpoint, const std::string & masterKey
 	_db = db;
 }
 
-void function_pt(void *ptr, size_t size, size_t nmemb, void *stream) {
+void CosmosApi::function_pt(void *ptr, size_t size, size_t nmemb, void *stream) {
 	printf((char*)ptr);
+	_response = (char*)ptr;
 }
 
 void CosmosApi::AddDocument(const std::string & document, const std::string& partitionKey)
@@ -160,12 +162,65 @@ void CosmosApi::PostRequest(const std::string& db, const std::string& collection
 	}
 }
 
-
-const std::string & CosmosApi::GetDocument(const std::string & key)
+std::string CosmosApi::GetDocument(const std::string & id, const std::string& partitionKey)
 {
-	// TODO: insert return statement here
-	return "Pelle";
+	return GetRequest("sandpit", "sandpit", id, partitionKey);
 }
+
+std::string CosmosApi::GetRequest(const std::string & db, const std::string & collection, const std::string & id, const std::string & partitionKey)
+{
+	CosmosApi::_response.clear();
+	CURL* curl = curl_easy_init();
+	if (curl) {
+		CURLcode res;
+
+		auto url = _endpoint;
+		url = url.append("dbs/");
+		url = url.append(db);
+		url = url.append("/colls/");
+		url = url.append(collection);
+		url = url.append("/docs/");
+		url = url.append(id);
+		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+
+		std::string currentDate = GetCurrentUtcTime();
+		std::string date_header = "x-ms-date: ";
+		date_header = date_header.append(currentDate);
+		struct curl_slist *headers = NULL;
+		headers = curl_slist_append(headers, date_header.c_str());
+		headers = curl_slist_append(headers, "x-ms-version: 2015-08-06");
+		headers = curl_slist_append(headers, "x-ms-documentdb-is-upsert: true");
+		if (!partitionKey.empty()) {
+			std::string partitionkey_header = "x-ms-documentdb-partitionkey: [ \"";
+			partitionkey_header = partitionkey_header.append(partitionKey);
+			partitionkey_header = partitionkey_header.append("\" ]");
+			headers = curl_slist_append(headers, partitionkey_header.c_str());
+		}
+
+		std::string resourceLink = "dbs/";
+		resourceLink = resourceLink.append(db);
+		resourceLink = resourceLink.append("/colls/");
+		resourceLink = resourceLink.append(collection);
+		resourceLink = resourceLink.append("/docs/");
+		resourceLink = resourceLink.append(id);
+		auto authHeaderToken = GenerateMasterKeyAuthorizationSignature("GET", resourceLink, "docs",
+			_masterKey, "master", "1.0", currentDate);
+		std::string authHeader("authorization: ");
+		authHeader = authHeader.append(authHeaderToken);
+		headers = curl_slist_append(headers, authHeader.c_str());
+		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, function_pt);
+
+		res = curl_easy_perform(curl);
+
+		// read the results
+		curl_slist_free_all(headers);
+
+		curl_easy_cleanup(curl);
+	}
+	return CosmosApi::_response;
+}
+
 
 
 int char2int(char input)
